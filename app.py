@@ -4,6 +4,24 @@ import pandas as pd
 from log_generator import generate_log
 from agent import run_agent_loop
 
+from database import init_db
+init_db()
+
+# Seed Initial Mock Data if Database is Empty
+def ensure_initial_data():
+    conn = sqlite3.connect("soc_data.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM raw_logs")
+    count = cursor.fetchone()[0]
+    conn.close()
+    
+    if count == 0:
+        for _ in range(5):
+            generate_log()
+        run_agent_loop()
+
+ensure_initial_data()
+
 # 1. Page Configuration
 st.set_page_config(page_title="AI SOC Copilot", page_icon="🛡️", layout="wide")
 
@@ -195,7 +213,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🛡️ AI SOC Copilot")
+st.title("AI SOC Copilot")
 
 # 2. Helper Data Function
 def fetch_data(query):
