@@ -3,6 +3,9 @@ import sqlite3
 import pandas as pd
 from log_generator import generate_log
 from agent import run_agent_loop
+from database import init_db
+
+init_db()
 
 # 1. Page Configuration
 st.set_page_config(page_title="AI SOC Copilot", page_icon="🛡️", layout="wide")
