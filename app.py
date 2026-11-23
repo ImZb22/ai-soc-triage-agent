@@ -23,7 +23,7 @@ def ensure_initial_data():
 ensure_initial_data()
 
 # 1. Page Configuration
-st.set_page_config(page_title="AI SOC Copilot", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="AI SOC Triage Agent", page_icon="🛡️", layout="wide")
 
 # Custom CSS for UI, Muted Pills, and Unprocessed Status Highlights
 st.markdown("""
@@ -136,34 +136,41 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* Custom Full-Width HTML Table Styling */
+    /* Safe Table Wrapper & Wrapping Cells (Prevents Column Overlap) */
+    .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        margin-bottom: 20px;
+    }
     .custom-table {
         width: 100%;
+        table-layout: fixed;
         border-collapse: collapse;
         background-color: #161922;
         border: 1px solid #282f3f;
         border-radius: 8px;
         overflow: hidden;
-        margin-bottom: 20px;
     }
     .custom-table th {
         background-color: #1e2330;
         color: #94a3b8;
-        padding: 10px 14px;
+        padding: 10px 10px;
         text-align: left;
         font-size: 0.78rem;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         border-bottom: 1px solid #282f3f;
-        white-space: nowrap;
+        word-wrap: break-word;
     }
     .custom-table td {
-        padding: 10px 14px;
+        padding: 10px 10px;
         color: #cbd5e1;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         border-bottom: 1px solid #1f2430;
-        white-space: nowrap;
+        white-space: normal; 
+        word-break: break-word;
+        overflow-wrap: anywhere;
     }
 
     /* ReAct Card Styling */
@@ -180,6 +187,7 @@ st.markdown("""
         font-size: 0.88rem;
         margin-bottom: 8px;
         line-height: 1.4;
+        word-break: break-word;
     }
     .react-label {
         color: #cbd5e1;
@@ -213,7 +221,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("AI SOC Copilot")
+st.title("AI SOC Triage Agent")
 
 # 2. Helper Data Function
 def fetch_data(query):
@@ -227,7 +235,8 @@ try:
     total_logs = fetch_data("SELECT COUNT(*) as count FROM raw_logs")['count'][0]
     contained_threats = fetch_data("SELECT COUNT(*) as count FROM blocked_entities")['count'][0]
     high_risk_logs = fetch_data("SELECT COUNT(*) as count FROM raw_logs WHERE severity IN ('HIGH', 'CRITICAL')")['count'][0]
-
+    escalated_count = fetch_data("SELECT COUNT(*) as count FROM alert_history WHERE decision = 'ESCALATED_TO_SENIOR_ANALYST'")['count'][0]
+    
     mttr_query = """
         SELECT AVG(strftime('%s', a.timestamp) - strftime('%s', r.timestamp)) as avg_seconds
         FROM alert_history a
@@ -240,7 +249,7 @@ try:
     else:
         mttr_str = "< 1 sec"
 except:
-    total_logs, contained_threats, high_risk_logs, mttr_str = 0, 0, 0, "< 1 sec"
+    total_logs, contained_threats, high_risk_logs, escalated_count, mttr_str = 0, 0, 0, 0, "< 1 sec"
 
 # 3. Sidebar Panel Construction
 st.sidebar.markdown("""
@@ -257,12 +266,12 @@ st.sidebar.markdown('<div class="sidebar-section">SIMULATION CONTROLS</div>', un
 
 if st.sidebar.button("⚡ Simulate Incoming Threat", use_container_width=True):
     generate_log()
-    st.toast("⚡ New telemetry ingested into raw logs!", icon="📥")
+    st.toast("⚡ New telemetry ingested into raw logs!")
     st.rerun()
 
 if st.sidebar.button("🤖 Trigger AI Agent Triage", use_container_width=True):
     run_agent_loop()
-    st.toast("🤖 AI Agent Triage complete! Threat logs evaluated.", icon="🛡️")
+    st.toast("🤖 AI Agent Triage complete! Threat logs evaluated.")
     st.rerun()
 
 st.sidebar.markdown('<div class="sidebar-section">SYSTEM HEALTH</div>', unsafe_allow_html=True)
@@ -270,16 +279,18 @@ st.sidebar.markdown(f"""
 <div style="color: #94a3b8; font-size: 0.8rem; line-height: 1.6;">
     • DB Connection: <span style="color:#4ade80;">Active</span><br>
     • Ingestion Rate: <span style="color:#38bdf8;">Realtime</span><br>
+    • Escalated to Senior Analyst: <span style="color:#f87171;">{escalated_count}</span><br>
     • Blocked Entities: <span style="color:#f87171;">{contained_threats}</span>
 </div>
 """, unsafe_allow_html=True)
 
 # 4. Metric Cards Row with Clean Vector Icons
-m1, m2, m3 = st.columns(3)
+m1, m2, m3, m4 = st.columns(4)
 
 alert_icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
 chart_icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'
 clock_icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+user_alert_icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>'
 
 with m1:
     st.markdown(f"""
@@ -295,7 +306,7 @@ with m2:
     <div class="metric-card">
         <div class="metric-title">{chart_icon} Logs Ingested (24h)</div>
         <div class="metric-value">{total_logs}</div>
-        <div class="metric-sub">↑ Live Pipeline Ingestion</div>
+        <div class="metric-sub">Live Pipeline Ingestion</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -304,7 +315,16 @@ with m3:
     <div class="metric-card">
         <div class="metric-title">{clock_icon} MTTR (Calculated Dynamic)</div>
         <div class="metric-value">{mttr_str}</div>
-        <div class="metric-sub">↓ Automated Agent Triage</div>
+        <div class="metric-sub">Automated Agent Triage</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with m4:
+    st.markdown(f"""
+    <div class="metric-card">
+        <div class="metric-title">{user_alert_icon} Escalated to Senior</div>
+        <div class="metric-value">{escalated_count}</div>
+        <div class="metric-sub">Flagged for Human Review</div>
     </div>
     """, unsafe_allow_html=True)
 
