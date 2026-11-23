@@ -32,6 +32,9 @@ flowchart LR
 2. **🧠 Triage & Escalate:** The agent inspects each alert, assigns a severity level (`Low`, `Medium`, or `High`), resolves routine alerts on its own, and flags high-risk alerts for senior analysts, keeping simulated response times under **30 minutes**.
 3. **📊 Store & Display:** All alerts, severity tags, and statuses are saved in a local SQLite database and shown in an interactive Streamlit dashboard.
 
+
+<img width="1851" height="944" alt="SOCAgent" src="https://github.com/user-attachments/assets/affd3294-a1a6-46f5-b5df-5d8815de3dba" />
+
 ---
 
 ### 📁 Project Structure
