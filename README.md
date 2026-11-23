@@ -8,24 +8,22 @@ A Security Operations Center (SOC) alert triage prototype built to help reduce a
 ### ⚙️ Working
 
 ```mermaid
-flowchart TD
-    A[Python random Log Generator] -->|Simulated Alerts| B[(SQLite Database)]
-    B --> C{Triage Agent Loop}
+flowchart LR
+    A[Python random Logs] --> B[(SQLite DB)]
+    B --> C{Triage Agent<br/>Thought → Evaluate → Action}
     
-    subgraph Agent["Thought -> Evaluate -> Action"]
-        C --> D[Read Alert Details]
-        D --> E[Decide Severity Level]
-    end
+    C -->|Low / Med| D[Auto-Handle & Log]
+    C -->|High Risk| E[Escalate to Senior Analyst]
+    
+    D --> F[Streamlit Dashboard]
+    E --> F
 
-    E -->|Low / Medium Risk| F[Handle Automatically]
-    F --> G[Save Status to Database]
-    
-    E -->|High Risk| H[Escalate to Senior Analyst]
-    H --> I[Flag Urgent Alert]
-    
-    G --> J[Streamlit Dashboard]
-    I --> J
-
+    style A fill:#1e293b,stroke:#64748b,color:#f8fafc
+    style B fill:#0f172a,stroke:#38bdf8,color:#f8fafc
+    style C fill:#312e81,stroke:#818cf8,color:#f8fafc
+    style D fill:#064e3b,stroke:#34d399,color:#f8fafc
+    style E fill:#7f1d1d,stroke:#f87171,color:#f8fafc
+    style F fill:#1e3a8a,stroke:#60a5fa,color:#f8fafc
 ```
 
 ### ⚡ Quick Overview
