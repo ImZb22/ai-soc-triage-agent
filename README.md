@@ -1,6 +1,6 @@
 ## AI SOC Alert Triage Agent
 
-**Live Dashboard:**  [Dashboard 🚀](https://ai-soc-copilot.streamlit.app/)
+**Live Dashboard:**  [Dashboard 🚀](https://ai-soc-triage-agent.streamlit.app/)
 
 A Security Operations Center (SOC) alert triage prototype built to help reduce analyst alert fatigue. The tool generates simulated security alerts, sorts them by severity using a *Thought -> Evaluate -> Action* loop, handles low- and medium-risk events automatically, and escalates high-risk threats to senior analysts through a live dashboard.
 
