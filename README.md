@@ -12,7 +12,7 @@ flowchart TD
     A[Python random Log Generator] -->|Simulated Alerts| B[(SQLite Database)]
     B --> C{Triage Agent Loop}
     
-    subgraph Agent ["Thought -> Evaluate -> Action"]
+    subgraph Agent["Thought -> Evaluate -> Action"]
         C --> D[Read Alert Details]
         D --> E[Decide Severity Level]
     end
